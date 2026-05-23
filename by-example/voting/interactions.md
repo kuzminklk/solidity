@@ -1,0 +1,23 @@
+
+## Information
+
+### Accounts
+1. Chairperson 0xa99C9296010AfA29bBF403ec303155CADD40C601
+2. Voter-0 0x52F49A46f11fEd55d3cD9F96B52902a661e08Ca8
+3. Voter-1 0x838FE1b25a11895B069F44e609268c404889F732
+
+
+## Actions
+
+### Deploy Voting
+Hash: …  
+Address: 0x4D3b5ED41001d9aDeDbb542A217bC3FD48e52B24  
+Network: Sepolia  
+Verification status: Verified  
+Account: Development-1  
+
+### Chairperson give rights to vote to Voter-0 
+Hash: …  
+
+### Voter-0 have voted
+Hash: …  

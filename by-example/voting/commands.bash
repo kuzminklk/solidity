@@ -1,5 +1,5 @@
 
-# Deploy the contract to Sepolia testnet and verify it on Etherscan
+# Deploy
 forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --account development-0 --verify --broadcast
 
 # Give the right to vote to a voter

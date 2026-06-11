@@ -1,6 +1,6 @@
 
-### Purpose 
-Detached repository for Solidity Documentation study materials
+### Description 
+Detached repository for [Solidity documentation](https://docs.soliditylang.org/en/v0.8.35/) study materials
 
-### Associations
-More information, study path, summary in [detached Notion Page](https://www.notion.so/kuzminklk/Solidity-31254d4de03580bca554c8df14e0bcfe?source=copy_link)
+### Purpose
+Part of computer-science study curriculum availabe in [Notion](https://app.notion.com/p/kuzminklk/31154d4de03580d7b5ceca5b187846be) (private for now)

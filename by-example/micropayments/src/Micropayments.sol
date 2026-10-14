@@ -2,112 +2,89 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 contract Frozeable {
-    bool private _frozen = false;
+	bool private _frozen = false;
 
-    modifier notFrozen() {
-        require(!_frozen, "Inactive Contract.");
-        _;
-    }
+	modifier notFrozen() {
+		require(!_frozen, "Inactive Contract.");
+		_;
+	}
 
-    function freeze() internal {
-        _frozen = true;
-    }
+	function freeze() internal {
+		_frozen = true;
+	}
 }
 
 contract SimplePaymentChannel is Frozeable {
-    address payable public sender;    // The account sending payments.
-    address payable public recipient; // The account receiving the payments.
-    uint256 public expiration;        // Timeout in case the recipient never closes.
+	address payable public sender; // The account sending payments.
+	address payable public recipient; // The account receiving the payments.
+	uint256 public expiration; // Timeout in case the recipient never closes.
 
-    constructor (address payable recipientAddress, uint256 duration)
-        payable
-    {
-        sender = payable(msg.sender);
-        recipient = recipientAddress;
-        expiration = block.timestamp + duration;
-    }
+	constructor(address payable recipientAddress, uint256 duration) payable {
+		sender = payable(msg.sender);
+		recipient = recipientAddress;
+		expiration = block.timestamp + duration;
+	}
 
-    /// the recipient can close the channel at any time by presenting a
-    /// signed amount from the sender. the recipient will be sent that amount,
-    /// and the remainder will go back to the sender
-    function close(uint256 amount, bytes memory signature)
-        external
-        notFrozen
-    {
-        require(msg.sender == recipient);
-        require(isValidSignature(amount, signature));
+	/// the recipient can close the channel at any time by presenting a
+	/// signed amount from the sender. the recipient will be sent that amount,
+	/// and the remainder will go back to the sender
+	function close(uint256 amount, bytes memory signature) external notFrozen {
+		require(msg.sender == recipient);
+		require(isValidSignature(amount, signature));
 
-        freeze();
-        (bool success, ) = recipient.call{value: amount}("");
-        require(success);
-        (success, ) = sender.call{value: address(this).balance}("");
-        require(success);
-    }
+		freeze();
+		(bool success,) = recipient.call{value: amount}("");
+		require(success);
+		(success,) = sender.call{value: address(this).balance}("");
+		require(success);
+	}
 
-    /// the sender can extend the expiration at any time
-    function extend(uint256 newExpiration)
-        external
-        notFrozen
-    {
-        require(msg.sender == sender);
-        require(newExpiration > expiration);
+	/// the sender can extend the expiration at any time
+	function extend(uint256 newExpiration) external notFrozen {
+		require(msg.sender == sender);
+		require(newExpiration > expiration);
 
-        expiration = newExpiration;
-    }
+		expiration = newExpiration;
+	}
 
-    /// if the timeout is reached without the recipient closing the channel,
-    /// then the Ether is released back to the sender.
-    function claimTimeout()
-        external
-        notFrozen
-    {
-        require(block.timestamp >= expiration);
-        freeze();
-        (bool success, ) = sender.call{value: address(this).balance}("");
-        require(success);
-    }
+	/// if the timeout is reached without the recipient closing the channel,
+	/// then the Ether is released back to the sender.
+	function claimTimeout() external notFrozen {
+		require(block.timestamp >= expiration);
+		freeze();
+		(bool success,) = sender.call{value: address(this).balance}("");
+		require(success);
+	}
 
-    function isValidSignature(uint256 amount, bytes memory signature)
-        internal
-        view
-        returns (bool)
-    {
-        bytes32 message = prefixed(keccak256(abi.encodePacked(this, amount)));
-        // check that the signature is from the payment sender
-        return recoverSigner(message, signature) == sender;
-    }
+	function isValidSignature(uint256 amount, bytes memory signature) internal view returns (bool) {
+		bytes32 message = prefixed(keccak256(abi.encodePacked(this, amount)));
+		// check that the signature is from the payment sender
+		return recoverSigner(message, signature) == sender;
+	}
 
-    /// All functions below this are just taken from the chapter
-    /// 'creating and verifying signatures' chapter.
-    function splitSignature(bytes memory sig)
-        internal
-        pure
-        returns (uint8 v, bytes32 r, bytes32 s)
-    {
-        require(sig.length == 65);
+	/// All functions below this are just taken from the chapter
+	/// 'creating and verifying signatures' chapter.
+	function splitSignature(bytes memory sig) internal pure returns (uint8 v, bytes32 r, bytes32 s) {
+		require(sig.length == 65);
 
-        assembly {
-            // first 32 bytes, after the length prefix
-            r := mload(add(sig, 32))
-            // second 32 bytes
-            s := mload(add(sig, 64))
-            // final byte (first byte of the next 32 bytes)
-            v := byte(0, mload(add(sig, 96)))
-        }
-        return (v, r, s);
-    }
+		assembly {
+			// first 32 bytes, after the length prefix
+			r := mload(add(sig, 32))
+			// second 32 bytes
+			s := mload(add(sig, 64))
+			// final byte (first byte of the next 32 bytes)
+			v := byte(0, mload(add(sig, 96)))
+		}
+		return (v, r, s);
+	}
 
-    function recoverSigner(bytes32 message, bytes memory sig)
-        internal
-        pure
-        returns (address)
-    {
-        (uint8 v, bytes32 r, bytes32 s) = splitSignature(sig);
-        return ecrecover(message, v, r, s);
-    }
+	function recoverSigner(bytes32 message, bytes memory sig) internal pure returns (address) {
+		(uint8 v, bytes32 r, bytes32 s) = splitSignature(sig);
+		return ecrecover(message, v, r, s);
+	}
 
-    /// builds a prefixed hash to mimic the behavior of eth_sign.
-    function prefixed(bytes32 hash) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
-    }
+	/// builds a prefixed hash to mimic the behavior of eth_sign.
+	function prefixed(bytes32 hash) internal pure returns (bytes32) {
+		return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+	}
 }

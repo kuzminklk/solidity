@@ -1,20 +1,17 @@
-
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.7.0 <0.9.0;
 
-import { Script } from "forge-std/Script.sol";
-import { Ballot } from "src/Voting.sol";
-import { DevOpsTools } from "../lib/foundry-devops/src/DevOpsTools.sol";
-
+import {Script} from "forge-std/Script.sol";
+import {Ballot} from "src/Voting.sol";
+import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
 
 contract GiveRightToVote is Script {
 	function run(address voter) public {
 		address mostRecentlyDeployedBallot = DevOpsTools.get_most_recent_deployment("Ballot", block.chainid);
 
 		vm.startBroadcast();
-			giveRightToVote(mostRecentlyDeployedBallot, voter);
+		giveRightToVote(mostRecentlyDeployedBallot, voter);
 		vm.stopBroadcast();
 	}
 
@@ -23,18 +20,16 @@ contract GiveRightToVote is Script {
 	}
 }
 
-
-
 contract Vote is Script {
-	function run(uint proposal) public {
+	function run(uint256 proposal) public {
 		address mostRecentlyDeployedBallot = DevOpsTools.get_most_recent_deployment("Ballot", block.chainid);
 
 		vm.startBroadcast();
-			vote(mostRecentlyDeployedBallot, proposal);
+		vote(mostRecentlyDeployedBallot, proposal);
 		vm.stopBroadcast();
 	}
 
-	function vote(address ballotAddress, uint proposal) public {
+	function vote(address ballotAddress, uint256 proposal) public {
 		Ballot(payable(ballotAddress)).vote(proposal);
 	}
 }

@@ -23,7 +23,7 @@ contract Coin {
 	function mint(address reciver, uint amount) public {
 		require(msg.sender == minter);
 		balances[reciver] += amount;
-	} 
+	}
 
 	// Errors allow you to provide information about
 	// why an operation failed. They are returned
